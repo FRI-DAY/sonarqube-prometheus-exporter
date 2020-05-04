@@ -33,12 +33,15 @@ public class PrometheusWebService implements WebService {
     private final Set<Metric<?>> enabledMetrics = new HashSet<>();
 
     static {
-
         SUPPORTED_METRICS.add(CoreMetrics.BUGS);
         SUPPORTED_METRICS.add(CoreMetrics.VULNERABILITIES);
         SUPPORTED_METRICS.add(CoreMetrics.CODE_SMELLS);
         SUPPORTED_METRICS.add(CoreMetrics.COVERAGE);
         SUPPORTED_METRICS.add(CoreMetrics.TECHNICAL_DEBT);
+        SUPPORTED_METRICS.add(CoreMetrics.DUPLICATED_LINES_DENSITY);
+        SUPPORTED_METRICS.add(CoreMetrics.DUPLICATED_BLOCKS);
+        SUPPORTED_METRICS.add(CoreMetrics.COGNITIVE_COMPLEXITY);
+        SUPPORTED_METRICS.add(CoreMetrics.COMPLEXITY);
     }
 
     public PrometheusWebService(Configuration configuration) {
@@ -73,8 +76,11 @@ public class PrometheusWebService implements WebService {
                         wsResponse.getComponent().getMeasuresList().forEach(measure -> {
 
                             if (this.gauges.containsKey(measure.getMetric())) {
-
-                                this.gauges.get(measure.getMetric()).labels(project.getKey(), project.getName()).set(Double.valueOf(measure.getValue()));
+                                if(measure.hasValue()){
+                                    this.gauges.get(measure.getMetric()).labels(project.getKey(), project.getName()).set(Double.valueOf(measure.getValue()));
+                                } else{
+                                    this.gauges.get(measure.getMetric()).labels(project.getKey(), project.getName()).set(Double.valueOf(measure.getPeriods().getPeriodsValueList().get(0).getValue()));
+                                }
                             }
                         });
                     });
